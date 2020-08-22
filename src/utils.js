@@ -12,12 +12,11 @@ export function edgeIntersect (p1, q1, edge) {
   const o3 = ccw(p2, q2, p1)
   const o4 = ccw(p2, q2, q1)
   if (o1 !== o2 && o3 !== o4) return true
-  if (o1 === 0) {
-    if (onSegment(p1, p2, q1)) return true
-    if (onSegment(p1, q2, q1)) return true
-    if (onSegment(p2, p1, q2)) return true
-    if (onSegment(p2, q1, q2)) return true
-  }
+  if (o1 === 0 && onSegment(p1, p2, q1)) return true
+  if (o2 === 0 && onSegment(p1, q2, q1)) return true
+  if (o3 === 0 && onSegment(p2, p1, q2)) return true
+  if (o4 === 0 && onSegment(p2, q1, q2)) return true
+  
   return false
 }
 
