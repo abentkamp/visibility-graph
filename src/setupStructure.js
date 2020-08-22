@@ -12,11 +12,14 @@ export function setupStructure (vg, geojson) {
 
   for (let i = 0; i < coords.length; i++) {
     const contour = new Contour()
-    const edges = contour.edges
+    const rings = contour.rings
     const bbox = contour.bbox
     vg._polygons.push(contour)
 
     for (let ii = 0; ii < coords[i].length; ii++) {
+      const ring = []
+      rings.push(ring)
+
       let prevPoint = new Point(coords[i][ii][0], i)
       let currentPoint = new Point(coords[i][ii][1], i)
       checkPointAgainstBbox(prevPoint, bbox)  
@@ -30,7 +33,7 @@ export function setupStructure (vg, geojson) {
 
       let prevEdge = new Edge(prevPoint, currentPoint)
       vg._edges.push(prevEdge)
-      edges.push(prevEdge)
+      ring.push(prevEdge)
 
       // Save me for later
       const firstPoint = prevPoint
@@ -49,7 +52,7 @@ export function setupStructure (vg, geojson) {
         const e = new Edge(prevPoint, currentPoint) // eslint-disable-line
 
         vg._edges.push(e)
-        edges.push(e)
+        ring.push(e)
 
         prevPoint = currentPoint
         currentPoint = nextPoint
@@ -61,13 +64,13 @@ export function setupStructure (vg, geojson) {
       const secondLastEdge = new Edge(prevEdge.p2, currentPoint)
 
       vg._edges.push(secondLastEdge)
-      edges.push(secondLastEdge)
+      ring.push(secondLastEdge)
 
       const lastEdge = new Edge(currentPoint, firstPoint) // eslint-disable-line
       linkPoints(currentPoint, firstPoint, firstPoint.nextPoint)
 
       vg._edges.push(lastEdge)
-      edges.push(lastEdge)
+      ring.push(lastEdge)
 
       vg._points.push(prevPoint)
       vg._points.push(nextPoint)
@@ -87,6 +90,7 @@ function checkPointAgainstBbox(point, bbox) {
   bbox[2] = Math.max(bbox[2], point.x);
   bbox[3] = Math.max(bbox[3], point.y);
 }
+
 function linkPoints (prevPoint, currentPoint, nextPoint) {
   currentPoint.prevPoint = prevPoint
   currentPoint.nextPoint = nextPoint

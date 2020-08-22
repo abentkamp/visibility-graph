@@ -139,35 +139,27 @@ function edgeInPolygon (p1, p2, polygons) {
   if (p1.polygonID !== p2.polygonID) return false
   if (p1.polygonID === -1 || p2.polygonID === -1) return false
   const midPoint = new Point([(p1.x + p2.x) / 2, (p1.y + p2.y) / 2], -1)
-  return polygonCrossing(midPoint, polygons[p1.polygonID].edges)
+  return polygonCrossing(midPoint, polygons[p1.polygonID].rings)
 }
 
-function polygonCrossing (p1, polyEdges) {
+function polygonCrossing (p1, polyRings) {
   const p2 = new Point([Infinity, p1.y], -1)
   let intersectCount = 0
-  let coFlag = false
-  let coDir = 0
 
-  for (let i = 0; i < polyEdges.length; i++) {
-    const e = polyEdges[i]
-    if (p1.y < e.p1.y && p1.y < e.p2.y) continue
-    if (p1.y > e.p1.y && p1.y > e.p2.y) continue
-    const co0 = (ccw(p1, e.p1, p2) === 0) && (e.p1.x > p1.x)
-    const co1 = (ccw(p1, e.p2, p2) === 0) && (e.p2.x > p1.x)
-    const coPoint = co0 ? e.p1 : e.p2
-    if (co0 || co1) {
-      coDir = e.getOtherPointInEdge(coPoint).y > p1.y ? coDir++ : coDir--
-      if (coFlag) {
-        if (coDir === 0) intersectCount++
-        coFlag = false
-        coDir = 0
-      } else {
-        coFlag = true
+  for (let i = 0; i < polyRings.length; i++) {
+    for (let ii = 0; ii < polyRings[i].length; ii++) {
+      const e = polyRings[i][ii]
+      const e1onHalfLine = (e.p1.y == p1.y) && (e.p1.x > p1.x)
+      const e2onHalfLine = (e.p2.y == p1.y) && (e.p2.x > p1.x)
+      // If either point is on the half line, pretend that the point a bit below.
+      if ((e1onHalfLine && e.p2.y < p1.y) || (e2onHalfLine && e.p1.y < p1.y)) {
+        intersectCount++
+      } else if (!e1onHalfLine && !e2onHalfLine && edgeIntersect(p1, p2, e)) {
+        intersectCount++
       }
-    } else if (edgeIntersect(p1, p2, e)) {
-      intersectCount++
     }
   }
+
   if (intersectCount % 2 === 0) return false
   return true
 }
