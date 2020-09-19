@@ -1,5 +1,6 @@
 import createGraph from 'ngraph.graph'
 import { createGraphFromGeoJson, addSinglePoint } from './createGraphFromGeoJson'
+import { edgeIntersect } from './utils'
 import { setupStructure } from './setupStructure'
 import Point from './Point'
 
@@ -48,6 +49,16 @@ export default class VisibilityGraph {
 
     addSinglePoint(this, this._lastOrigin)
     addSinglePoint(this, this._lastDestination)
+
+    var directLine = true;
+    for (var i = 0; i < this._edges.length; i++) {
+      if (edgeIntersect(this._lastOrigin, this._lastDestination, this._edges[i])) {
+        directLine = false;
+        break;
+      }
+    }
+    if (directLine) this.graph.addLink(this._lastOrigin.nodeId, this._lastDestination.nodeId);
+
     return [this._lastOrigin, this._lastDestination]
   }
 
